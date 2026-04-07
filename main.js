@@ -1,48 +1,90 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Menu } = require('electron');
 const path = require('path');
 
+const MIN_WINDOW_WIDTH = 220;
+const MIN_WINDOW_HEIGHT = 64;
+
 let mainWindow;
+let tray = null;
 
 function createWindow() {
-  // 메인 윈도우 생성
   mainWindow = new BrowserWindow({
-    width: 500,
-    height: 350,
-    minWidth: 300,
-    minHeight: 200,
-    frame: false, // 프레임 제거 (수동 크기 조절 가능)
-    transparent: true, // 배경 투명화
-    alwaysOnTop: true, // 배경화면처럼 쓰기 위해 기본은 상단 고정 해제
+    width: MIN_WINDOW_WIDTH,
+    height: MIN_WINDOW_HEIGHT,
+    minWidth: MIN_WINDOW_WIDTH,
+    minHeight: MIN_WINDOW_HEIGHT,
+    useContentSize: true,
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false, // 렌더러 프로세스에서 직접 로직 수행을 위해 설정
+      contextIsolation: false,
     },
   });
 
-  // index.html 로드
+  mainWindow.setMinimumSize(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT);
+
   mainWindow.loadFile('index.html');
 
-  // 창이 닫힐 때 객체 해제
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
 }
 
-// 앱 준비 완료 시 창 생성
 app.whenReady().then(() => {
   createWindow();
+
+  tray = new Tray(path.join(__dirname, 'icon.ico'));
+  const contextMenu = Menu.buildFromTemplate([
+    { 
+      label: '시계 보이기/숨기기', 
+      click: () => {
+        if (mainWindow.isVisible()) {
+          mainWindow.hide();
+        } else {
+          mainWindow.show();
+        }
+      }
+    },
+    { type: 'separator' },
+    { 
+      label: '종료', 
+      click: () => {
+        app.quit();
+      }
+    }
+  ]);
+  tray.setToolTip('디지털 시계');
+  tray.setContextMenu(contextMenu);
+
+  tray.on('click', () => {
+    if (mainWindow.isVisible()) {
+      mainWindow.hide();
+    } else {
+      mainWindow.show();
+    }
+  });
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
 
-// 모든 창이 닫히면 앱 종료
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
-// 렌더러 프로세스에서 오는 종료 요청 처리
 ipcMain.on('close-app', () => {
   app.quit();
+});
+
+ipcMain.on('resize-window', (event, { width, height }) => {
+  if (mainWindow) {
+    mainWindow.setSize(
+      Math.max(width, MIN_WINDOW_WIDTH),
+      Math.max(height, MIN_WINDOW_HEIGHT),
+      true
+    );
+  }
 });

@@ -4,5 +4,4 @@ out/
 .DS_Store
 *.log
 .env
-# 빌드 결과물 중 ZIP은 업로드에 포함하고 싶으므로 아래와 같이 예외 처리할 수도 있습니다.
-# !dist/*.zip
+*.zip
