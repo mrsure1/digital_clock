@@ -162,10 +162,15 @@ async function fetchWeather() {
 fetchWeather();
 setInterval(fetchWeather, 1800000);
 
-const MIN_WINDOW_WIDTH = 220;
-const MIN_WINDOW_HEIGHT = 64;
+const MIN_WINDOW_WIDTH = 300;
+const MIN_WINDOW_HEIGHT = 80;
 const EXPANDED_WINDOW_WIDTH = 500;
 const EXPANDED_WINDOW_HEIGHT = 400;
+const SETTINGS_EXPANDED_STORAGE_KEY = 'clock-settings-expanded';
+
+function syncSettingsState(isExpanded) {
+  localStorage.setItem(SETTINGS_EXPANDED_STORAGE_KEY, isExpanded ? 'true' : 'false');
+}
 
 // --- 3. 설정 패널 토글 ---
 function toggleSettings(forceClose) {
@@ -178,6 +183,7 @@ function toggleSettings(forceClose) {
   }
 
   const isExpanded = settingsPanel.classList.contains('expanded');
+  syncSettingsState(isExpanded);
   ipcRenderer.send('resize-window', {
     width: isExpanded ? EXPANDED_WINDOW_WIDTH : MIN_WINDOW_WIDTH,
     height: isExpanded ? EXPANDED_WINDOW_HEIGHT : MIN_WINDOW_HEIGHT,
@@ -191,6 +197,11 @@ if (toggleBtn) {
 const closeSettingsBtn = document.getElementById('close-settings-btn');
 if (closeSettingsBtn) {
   closeSettingsBtn.onclick = () => toggleSettings(true);
+}
+
+if (localStorage.getItem(SETTINGS_EXPANDED_STORAGE_KEY) === 'true') {
+  settingsPanel.classList.add('expanded');
+  toggleBtn.classList.add('active');
 }
 
 // --- 4. 색상 및 밝기 조절 ---

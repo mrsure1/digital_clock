@@ -50,7 +50,7 @@ body {
   padding: 6px 10px;
   user-select: none;
   gap: 8px;
-  min-height: 64px;
+  min-height: 80px;
 }
 
 /* 기온 표시 — 시계 왼쪽 */

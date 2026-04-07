@@ -6,6 +6,7 @@
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder --win --x64",
+    "pack:win": "electron-packager . 사이버시계 --platform=win32 --arch=x64 --out=dist --overwrite --icon=icon.ico",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
