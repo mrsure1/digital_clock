@@ -1,0 +1,35 @@
+name: Publish Release Zip
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "디지털시계.zip"
+      - "README.md"
+      - ".github/workflows/release-zip.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish-release-zip:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Publish release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-download
+          name: Latest Download
+          body: |
+            실행 파일이 포함된 최신 배포 ZIP입니다.
+            `사이버시계-win32-x64/사이버시계.exe`를 실행하면 됩니다.
+          files: 디지털시계.zip
+          make_latest: true
