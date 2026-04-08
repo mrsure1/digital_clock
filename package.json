@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder --win --x64",
-    "pack:win": "electron-packager . 사이버시계 --platform=win32 --arch=x64 --out=dist --overwrite --icon=icon.ico",
+    "pack:win": "electron-packager . DigitalClock --platform=win32 --arch=x64 --out=dist --overwrite --icon=icon.ico",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -15,16 +15,18 @@
   "type": "commonjs",
   "build": {
     "appId": "com.mrsure.digitalclock",
-    "productName": "디지털시계",
+    "productName": "DigitalClock",
+    "icon": "icon.ico",
     "copyright": "Copyright © 2026 MrSure",
     "directories": {
       "output": "dist"
     },
     "win": {
-      "target": "portable"
+      "target": "portable",
+      "icon": "icon.ico"
     },
     "portable": {
-      "artifactName": "디지털시계.exe"
+      "artifactName": "DigitalClock.exe"
     }
   },
   "devDependencies": {

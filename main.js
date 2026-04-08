@@ -64,6 +64,7 @@ function createWindow() {
     frame: false,
     transparent: true,
     alwaysOnTop: true,
+    icon: path.join(__dirname, 'icon.ico'),
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
