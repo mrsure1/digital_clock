@@ -34,6 +34,7 @@ body {
   display: flex;
   flex-direction: column;
   position: relative;
+  overflow: hidden; /* 추가 */
 }
 
 /* 드래그 가능 영역 설정 */
@@ -44,13 +45,14 @@ body {
 
 /* 메인 시계 표시부 — 한 줄 가로 레이아웃 */
 #clock-display {
+  flex: 1; /* 여백을 채우도록 수정 */
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 6px 10px;
+  padding: 0 15px; /* 패딩 최적화 */
   user-select: none;
-  gap: 8px;
-  min-height: 80px;
+  gap: 1.5vw; /* 창 너비에 따른 동적 간격 */
+  min-height: 50px;
 }
 
 /* 기온 표시 — 시계 왼쪽 */

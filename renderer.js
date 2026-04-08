@@ -1,4 +1,4 @@
-﻿const { ipcRenderer } = require('electron');
+const { ipcRenderer } = require('electron');
 
 // DOM 요소 참조
 const hoursEl = document.getElementById('hours');
@@ -79,15 +79,15 @@ function updateClock() {
   const hStr = String(h);
   const mStr = String(now.getMinutes()).padStart(2, '0');
 
-  hoursEl.textContent = hStr;
-  minutesEl.textContent = mStr;
+  if (hoursEl) hoursEl.textContent = hStr;
+  if (minutesEl) minutesEl.textContent = mStr;
 
   if (ampm === 'am') {
-    amRow.classList.add('active');
-    pmRow.classList.remove('active');
+    if (amRow) amRow.classList.add('active');
+    if (pmRow) pmRow.classList.remove('active');
   } else {
-    pmRow.classList.add('active');
-    amRow.classList.remove('active');
+    if (pmRow) pmRow.classList.add('active');
+    if (amRow) amRow.classList.remove('active');
   }
 
   // 알람 체크
@@ -98,18 +98,19 @@ function updateClock() {
     alert('[알람] 설정하신 시간 ' + alarmTime + ' 입니다!');
     stopAlarmSound();
     alarmTime = null;
-    alarmStatus.textContent = '알람 없음';
+    if (alarmStatus) alarmStatus.textContent = '알람 없음';
   }
 }
 
 setInterval(() => {
   updateClock();
-  separatorEl.style.opacity = separatorEl.style.opacity === '0' ? '1' : '0';
+  if (separatorEl) {
+    separatorEl.style.opacity = separatorEl.style.opacity === '0' ? '1' : '0';
+  }
 }, 500);
 
 // --- 2. 기온 정보 (wttr.in + Open-Meteo 폴백) ---
 async function fetchWeather() {
-  // 1차: wttr.in
   try {
     const city = currentCity || '';
     const url = 'https://wttr.in/' + city + '?format=%t';
@@ -117,7 +118,7 @@ async function fetchWeather() {
     if (response.ok) {
       const temp = await response.text();
       if (temp && !temp.includes('Unknown') && !temp.includes('Sorry') && temp.trim().length < 15) {
-        tempEl.textContent = temp.trim();
+        if (tempEl) tempEl.textContent = temp.trim();
         return;
       }
     }
@@ -125,11 +126,9 @@ async function fetchWeather() {
     console.warn('wttr.in failed, switching to fallback:', error.message);
   }
 
-  // 2차: Open-Meteo (무료, API키 불필요)
   try {
     let lat = 37.5665;
     let lon = 126.9780;
-
     if (currentCity) {
       const geoUrl = 'https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(currentCity) + '&count=1&language=ko';
       const geoRes = await fetch(geoUrl);
@@ -141,22 +140,20 @@ async function fetchWeather() {
         }
       }
     }
-
     const weatherUrl = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current_weather=true';
     const weatherRes = await fetch(weatherUrl);
     if (weatherRes.ok) {
       const weatherData = await weatherRes.json();
       if (weatherData.current_weather) {
         const temp = weatherData.current_weather.temperature;
-        tempEl.textContent = temp + String.fromCharCode(176) + 'C';
+        if (tempEl) tempEl.textContent = temp + String.fromCharCode(176) + 'C';
         return;
       }
     }
   } catch (error) {
     console.error('Fallback weather API also failed:', error);
   }
-
-  tempEl.textContent = '--' + String.fromCharCode(176) + 'C';
+  if (tempEl) tempEl.textContent = '--' + String.fromCharCode(176) + 'C';
 }
 
 fetchWeather();
@@ -165,7 +162,7 @@ setInterval(fetchWeather, 1800000);
 const MIN_WINDOW_WIDTH = 300;
 const MIN_WINDOW_HEIGHT = 80;
 const EXPANDED_WINDOW_WIDTH = 500;
-const EXPANDED_WINDOW_HEIGHT = 400;
+const EXPANDED_WINDOW_HEIGHT = 420;
 const SETTINGS_EXPANDED_STORAGE_KEY = 'clock-settings-expanded';
 
 function syncSettingsState(isExpanded) {
@@ -188,6 +185,9 @@ function toggleSettings(forceClose) {
     width: isExpanded ? EXPANDED_WINDOW_WIDTH : MIN_WINDOW_WIDTH,
     height: isExpanded ? EXPANDED_WINDOW_HEIGHT : MIN_WINDOW_HEIGHT,
   });
+  
+  // 리사이징 함수 호출하여 시계 크기 즉시 조정
+  setTimeout(resizeClock, 50); 
 }
 
 if (toggleBtn) {
@@ -238,15 +238,32 @@ closeBtn.addEventListener('click', () => {
   ipcRenderer.send('close-app');
 });
 
-// --- 7. 반응형 폰트 크기 ---
-window.addEventListener('resize', () => {
+// --- 7. 반응형 폰트 크기 고도화 ---
+function resizeClock() {
   const width = window.innerWidth;
   const height = window.innerHeight;
-  const baseSize = Math.min(width / 7, height * 0.55);
-  hoursEl.style.fontSize = baseSize + 'px';
-  minutesEl.style.fontSize = baseSize + 'px';
-  separatorEl.style.fontSize = (baseSize * 0.85) + 'px';
-  tempEl.style.fontSize = Math.max(baseSize * 0.22, 12) + 'px';
-});
+  
+  // 설정 패널이 닫혀 있을 때는 화면 전체를 활용, 열려 있을 때는 상단 일부만 활용
+  const isExpanded = settingsPanel.classList.contains('expanded');
+  const availableHeight = isExpanded ? height * 0.35 : height;
+  
+  // 가로/세로 중 더 크기를 제한하는 쪽에 맞춰 폰트 사이즈 계산
+  const baseSize = Math.min(width * 0.155, availableHeight * 0.72);
+  
+  if (hoursEl) hoursEl.style.fontSize = baseSize + 'px';
+  if (minutesEl) minutesEl.style.fontSize = baseSize + 'px';
+  if (separatorEl) separatorEl.style.fontSize = (baseSize * 0.9) + 'px';
+  
+  if (tempEl) tempEl.style.fontSize = Math.max(baseSize * 0.25, 14) + 'px';
+  
+  const ampmIndicator = document.getElementById('ampm-indicator');
+  if (ampmIndicator) {
+    ampmIndicator.style.fontSize = Math.max(baseSize * 0.15, 12) + 'px';
+  }
+}
 
-window.dispatchEvent(new Event('resize'));
+window.addEventListener('resize', resizeClock);
+window.addEventListener('load', resizeClock);
+
+// 초기 실행
+resizeClock();
