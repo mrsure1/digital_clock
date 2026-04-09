@@ -17,6 +17,7 @@ const setAlarmBtn = document.getElementById('set-alarm-btn');
 const alarmStatus = document.getElementById('alarm-status');
 const cityInput = document.getElementById('city-input');
 const saveCityBtn = document.getElementById('save-city-btn');
+const bgOpacitySlider = document.getElementById('bg-opacity-slider');
 
 // 상태 변수
 let alarmTime = null;
@@ -27,6 +28,13 @@ let activeOscillators = [];
 // 저장된 도시가 있으면 입력창에 표시
 if (currentCity) {
   cityInput.value = currentCity;
+}
+
+// 저장된 투명도 로드
+const savedOpacity = localStorage.getItem('clock-bg-opacity');
+if (savedOpacity !== null) {
+  document.documentElement.style.setProperty('--bg-opacity', savedOpacity);
+  bgOpacitySlider.value = savedOpacity;
 }
 
 // --- 0. 알람 비프음 생성 (Web Audio API) ---
@@ -214,6 +222,12 @@ colorPicker.addEventListener('input', (e) => {
 brightnessSlider.addEventListener('input', (e) => {
   const brightness = e.target.value;
   document.getElementById('clock-display').style.filter = 'brightness(' + brightness + ')';
+});
+
+bgOpacitySlider.addEventListener('input', (e) => {
+  const opacity = e.target.value;
+  document.documentElement.style.setProperty('--bg-opacity', opacity);
+  localStorage.setItem('clock-bg-opacity', opacity);
 });
 
 // --- 5. 알람 설정 ---

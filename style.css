@@ -1,7 +1,8 @@
 :root {
   --clock-color: #ff4444; /* 기본 레드 색상 */
   --clock-glow: #ff444488;
-  --bg-color: rgba(20, 20, 20, 0.85); /* 반투명 다크 배경 */
+  --bg-opacity: 0.85;
+  --bg-color: rgba(20, 20, 20, var(--bg-opacity)); /* 반투명 다크 배경 */
   --panel-bg: rgba(30, 30, 30, 0.95);
   --text-primary: #ffffff;
   --text-secondary: #aaaaaa;
